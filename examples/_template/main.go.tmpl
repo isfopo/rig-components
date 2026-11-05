@@ -1,0 +1,44 @@
+// Example template: copy this directory, rename, and replace <Name>/<name>.
+//
+//	go run ./examples/<name>
+package main
+
+import (
+	"fmt"
+
+	tea "github.com/charmbracelet/bubbletea"
+
+	"github.com/isfopo/rig/components/demo"
+	"github.com/isfopo/rig/components/<name>"
+)
+
+type model struct {
+	c <name>.Model
+}
+
+func newModel() model {
+	return model{c: <name>.New(/* ... */)}
+}
+
+func (m model) Init() tea.Cmd { return nil }
+
+func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	switch msg := msg.(type) {
+	case tea.KeyMsg:
+		if msg.String() == "q" || msg.String() == "ctrl+c" {
+			return m, tea.Quit
+		}
+	}
+	nm, cmd := m.c.Update(msg)
+	m.c = nm.(<name>.Model)
+	return m, cmd
+}
+
+func (m model) View() string {
+	return "<name> demo — q quit\n\n" + m.c.View()
+}
+
+func main() {
+	demo.Fatal(newModel())
+	_ = fmt.Sprint
+}
