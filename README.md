@@ -1,8 +1,8 @@
-# rig components (library module)
+# rig-components
 
-Reusable, generic Bubble Tea components extracted from `rig`. This is a
-separate Go module (`github.com/isfopo/rig/components`) so it can be
-versioned and consumed by other apps independently of `rig`.
+Reusable Bubble Tea components shared by rig applications. This is a
+separate Go module (`github.com/isfopo/rig-components`) so it can be
+versioned and consumed independently.
 
 ## Packages
 
@@ -57,4 +57,5 @@ it against `testdata/*.golden`. Regenerate with `-update`:
 
 To spin this off into its own repository, move this directory to a new repo,
 update the module path in `go.mod`, and update import paths in consumers.
-No `rig`-internal dependencies exist, so extraction is mechanical.
+No application-specific dependencies exist, so the components remain
+reusable across rig apps.
