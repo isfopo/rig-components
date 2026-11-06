@@ -7,7 +7,7 @@ require (
 	github.com/charmbracelet/lipgloss v1.1.0
 	github.com/charmbracelet/x/exp/golden v0.0.0-20240806155701-69247e0abc2a
 	github.com/charmbracelet/x/exp/teatest v0.0.0-20261101151554-27ecf3e4d454
-	github.com/isfopo/rig-core v0.0.0-20261105174440-b86f8159c422
+	github.com/isfopo/rig-core v0.0.0-20261106133911-6eecd430f826
 )
 
 require (

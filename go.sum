@@ -24,6 +24,8 @@ github.com/gen2brain/malgo v0.11.26 h1:k5WcPIKw1bbJAbPqrvNPt7nehPLoaPNcOFde2+eru
 github.com/gen2brain/malgo v0.11.26/go.mod h1:xLVG3ROA33Bzol1quF3e4ehqcFuqh8QK4B8T6LQUs/M=
 github.com/isfopo/rig-core v0.0.0-20261105174440-b86f8159c422 h1:h2rN6B9nUgyyCzs9ynPfalD9cMGRZuW4FJT+cP+GJLc=
 github.com/isfopo/rig-core v0.0.0-20261105174440-b86f8159c422/go.mod h1:cVLALp5g+Xdgt6+nYV+E6AQDJkiPxLUwMYgBuPw0D+c=
+github.com/isfopo/rig-core v0.0.0-20261106133911-6eecd430f826 h1:lvqv5O9w229rKNMVh1P+WsSwLzQVA7wbex1fuBBsnlo=
+github.com/isfopo/rig-core v0.0.0-20261106133911-6eecd430f826/go.mod h1:ztFK9iLzXVI5t1dF890pj3kLaC3PbxqkYxv6VaA2KHw=
 github.com/lucasb-eyer/go-colorful v1.2.0 h1:1nnpGOrhyZZuNyfu1QjKiUICQ74+3FNCN69Aj6K7nkY=
 github.com/lucasb-eyer/go-colorful v1.2.0/go.mod h1:R4dSotOR9KMtayYi1e77YzuveK+i7ruzyGqttikkLy0=
 github.com/mattn/go-isatty v0.0.20 h1:xfD0iDuEKnDkl03q4limB+vH+GxLEtL/jb4xVJSWWEY=

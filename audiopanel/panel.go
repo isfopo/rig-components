@@ -61,14 +61,17 @@ type Panel struct {
 	Buf        chan []int16
 	Drops      atomic.Int64
 	PlayStream *audio.Stream
+
+	// AppName is used to derive PipeWire/PulseAudio stream names.
+	AppName string
 }
 
 // newAudioPanel initializes the engine eagerly (like the MIDI monitor is
 // created in New, never in a toggle) and starts with the system default
 // devices selected but nothing opened until the user picks a device.
-func New() *Panel {
-	p := &Panel{Buf: make(chan []int16, 400)}
-	p.Eng, p.InitErr = audio.NewEngine()
+func New(appName string) *Panel {
+	p := &Panel{Buf: make(chan []int16, 400), AppName: appName}
+	p.Eng, p.InitErr = audio.NewEngineWithName(appName)
 	if p.InitErr != nil {
 		p.Eng = nil
 	}
@@ -186,8 +189,9 @@ func (p *Panel) RestartCmd() tea.Cmd {
 	// snapshot all selection state on the Update thread
 	seq := p.Seq.Add(1)
 	opts := audio.Options{
-		DeviceID: deviceIDFor(p.InOptions(), p.InDrop.Current),
-		Channels: p.Channels(),
+		DeviceID:    deviceIDFor(p.InOptions(), p.InDrop.Current),
+		Channels:    p.Channels(),
+		CaptureName: streamName(p.AppName, "in"),
 	}
 	outID := deviceIDFor(p.OutOptions(), p.OutDrop.Current)
 	mon := p.Monitor
@@ -467,4 +471,12 @@ func MeterTickCmd() tea.Cmd {
 	return tea.Tick(200*time.Millisecond, func(time.Time) tea.Msg {
 		return MeterMsg{}
 	})
+}
+
+// streamName builds a backend stream name from an app name and direction.
+func streamName(app, direction string) string {
+	if app == "" {
+		return ""
+	}
+	return app + ":" + direction
 }
