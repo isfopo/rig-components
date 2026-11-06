@@ -61,7 +61,6 @@ type Panel struct {
 	Buf        chan []int16
 	Drops      atomic.Int64
 	PlayStream *audio.Stream
-
 }
 
 // newAudioPanel initializes the engine eagerly (like the MIDI monitor is
@@ -155,7 +154,6 @@ type PlaybackStartedMsg struct {
 
 type MeterMsg struct{}
 
-
 // ---- commands ---------------------------------------------------------
 
 // listCmd enumerates capture/playback devices (async: WASAPI/ALSA
@@ -245,6 +243,7 @@ func (p *Panel) StopSimplex() {
 func (p *Panel) Metering() bool {
 	return p.Capturing
 }
+
 // ---- audio thread side -------------------------------------------------
 
 // deliver is the capture callback: meters the block, and forwards a copy to
