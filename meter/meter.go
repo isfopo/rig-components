@@ -14,27 +14,52 @@ import (
 // blocks are the 9 rendering levels for a single cell (empty .. full).
 var blocks = []rune{' ', '▏', '▎', '▍', '▌', '▋', '▊', '▉', '█'}
 
-// Bar renders a capture level meter.
-//
-//	peak:    max magnitude in the window (int16)
-//	frames:  frames observed in the window (used for the rate readout)
-//	drops:   dropped blocks (rendered in red when > 0)
-//
-// The amplitude is converted to dBFS (a logarithmic scale) and then rendered
-// with 1/8-cell resolution so small level changes are visible.
-func Bar(peak int16, frames int64, drops uint64) string {
-	const width = 20
-	db := toDbFS(peak)
+// scaleBreaks define the perceptual (non-linear) mapping from dBFS to bar
+// position. More resolution is given to the upper range, matching how humans
+// perceive level changes (and standard PPM/VU meters).
+var scaleBreaks = []struct {
+	db  float64
+	pos float64
+}{
+	{-60, 0.00},
+	{-40, 0.12},
+	{-30, 0.25},
+	{-20, 0.40},
+	{-12, 0.55},
+	{-6, 0.72},
+	{-3, 0.84},
+	{0, 1.00},
+}
 
-	// ratio in [0,1] over the -60..0 dBFS display range (log scale of amplitude).
-	ratio := (db + 60) / 60
+// dbToPos maps a dBFS value to a 0..1 bar position using the perceptual scale.
+func dbToPos(db float64) float64 {
+	if db < scaleBreaks[0].db {
+		return 0
+	}
+	if db >= scaleBreaks[len(scaleBreaks)-1].db {
+		return 1
+	}
+	for i := 0; i < len(scaleBreaks)-1; i++ {
+		a, b := scaleBreaks[i], scaleBreaks[i+1]
+		if db >= a.db && db <= b.db {
+			t := (db - a.db) / (b.db - a.db)
+			return a.pos + t*(b.pos-a.pos)
+		}
+	}
+	return 0
+}
+
+// scaleTicks are the dB values labeled on the ruler.
+var scaleTicks = []float64{-60, -40, -20, -12, -6, -3, 0}
+
+// renderBar builds the filled bar string for a 0..1 ratio at 1/8-cell precision.
+func renderBar(ratio float64, width int) string {
 	if ratio < 0 {
 		ratio = 0
 	}
 	if ratio > 1 {
 		ratio = 1
 	}
-	// total eighths across the whole bar
 	total := ratio * float64(width) * 8
 	fullCells := int(total / 8)
 	rem := int(total - float64(fullCells*8))
@@ -44,47 +69,84 @@ func Bar(peak int16, frames int64, drops uint64) string {
 	if rem > 8 {
 		rem = 8
 	}
-
-	var bar strings.Builder
+	var b strings.Builder
 	for i := 0; i < width; i++ {
 		if i < fullCells {
-			bar.WriteRune('█')
+			b.WriteRune('█')
 		} else if i == fullCells {
 			if rem > 0 {
-				bar.WriteRune(blocks[rem])
+				b.WriteRune(blocks[rem])
 			} else {
-				bar.WriteRune(' ')
+				b.WriteRune(' ')
 			}
 		} else {
-			bar.WriteRune(' ')
+			b.WriteRune(' ')
 		}
 	}
-	barStr := bar.String()
-
-	// color: green under -12 dB, yellow -12..-3, red above -3
-	color := "42" // green
-	if db > -3 {
-		color = "196" // red
-	} else if db > -12 {
-		color = "214" // orange/yellow
-	}
-	barStyled := lipgloss.NewStyle().Foreground(lipgloss.Color(color)).Render(barStr)
-
-	rate := ""
-	if frames > 0 {
-		rate = fmt.Sprintf(" %4.1fkf/s", float64(frames)/1000/0.2)
-	}
-	dropTxt := ""
-	if drops > 0 {
-		dropTxt = lipgloss.NewStyle().Foreground(lipgloss.Color("196")).Bold(true).Render(fmt.Sprintf(" drops=%d", drops))
-	}
-	okStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("250"))
-	return okStyle.Render(fmt.Sprintf("[%s] %6.1fdBFS%s%s", barStyled, db, rate, dropTxt))
+	return b.String()
 }
 
-// BarDB renders a meter from a dBFS value (e.g. an RMS level) rather than a
-// raw peak. peakDb, when >= 0 and greater than db, is drawn as a peak-hold
-// marker (a bright cell) so clipping/transients remain visible.
+// ruler builds a two-line dB scale for the bar. Labels are placed greedily so
+// they never overlap.
+func ruler(width int) string {
+	// tick row
+	ticks := make([]rune, width)
+	for i := range ticks {
+		ticks[i] = ' '
+	}
+	type tick struct {
+		pos int
+		lbl string
+	}
+	var ts []tick
+	for _, db := range scaleTicks {
+		pos := int(math.Round(dbToPos(db) * float64(width-1)))
+		if pos < 0 {
+			pos = 0
+		}
+		if pos >= width {
+			pos = width - 1
+		}
+		lbl := fmt.Sprintf("%.0f", db)
+		if db == 0 {
+			lbl = "0"
+		}
+		ts = append(ts, tick{pos: pos, lbl: lbl})
+		ticks[pos] = '┬'
+	}
+	// label row, greedy non-overlapping placement
+	row := make([]rune, width)
+	for i := range row {
+		row[i] = ' '
+	}
+	cursor := 0
+	for _, t := range ts {
+		start := t.pos - len(t.lbl)/2
+		if start < cursor {
+			start = cursor
+		}
+		if start+len(t.lbl) > width {
+			// skip if it won't fit
+			continue
+		}
+		for j, r := range t.lbl {
+			row[start+j] = r
+		}
+		cursor = start + len(t.lbl) + 1
+	}
+	return string(ticks) + "\n" + string(row)
+}
+
+// Bar renders a capture level meter from a raw int16 peak.
+func Bar(peak int16, frames int64, drops uint64) string {
+	db := toDbFS(peak)
+	return BarDB(db, db, frames, drops)
+}
+
+// BarDB renders a meter from a dBFS value (e.g. an RMS level). peakDb, when
+// greater than db, is drawn as a peak-hold marker (│) so transients remain
+// visible. A perceptual (non-linear) scale is used and a dB ruler is printed
+// beneath the bar.
 func BarDB(db, peakDb float64, frames int64, drops uint64) string {
 	const width = 20
 	if db < -60 {
@@ -93,53 +155,33 @@ func BarDB(db, peakDb float64, frames int64, drops uint64) string {
 	if db > 0 {
 		db = 0
 	}
-	ratio := (db + 60) / 60
-	total := ratio * float64(width) * 8
-	fullCells := int(total / 8)
-	rem := int(total - float64(fullCells*8))
-	if rem < 0 {
-		rem = 0
+	if peakDb < -60 {
+		peakDb = -60
 	}
-	if rem > 8 {
-		rem = 8
+	if peakDb > 0 {
+		peakDb = 0
 	}
 
-	// peak marker position
-	peakPos := -1
-	if peakDb >= -60 && peakDb > db {
-		if peakDb > 0 {
-			peakDb = 0
-		}
-		pr := (peakDb + 60) / 60
-		peakPos = int(pr * float64(width) * 8 / 8)
-		if peakPos >= width {
-			peakPos = width - 1
-		}
+	ratio := dbToPos(db)
+	barStr := renderBar(ratio, width)
+
+	// overlay peak marker
+	runes := []rune(barStr)
+	if peakDb > db {
+		peakPos := int(math.Round(dbToPos(peakDb) * float64(width-1)))
 		if peakPos < 0 {
 			peakPos = 0
 		}
-	}
-
-	var bar strings.Builder
-	for i := 0; i < width; i++ {
-		if i < fullCells {
-			bar.WriteRune('█')
-		} else if i == fullCells {
-			if rem > 0 {
-				bar.WriteRune(blocks[rem])
-			} else {
-				bar.WriteRune(' ')
-			}
+		if peakPos >= width {
+			peakPos = width - 1
+		}
+		if runes[peakPos] == ' ' {
+			runes[peakPos] = '│'
 		} else {
-			bar.WriteRune(' ')
+			runes[peakPos] = '┃'
 		}
 	}
-	// overlay peak marker
-	runes := []rune(bar.String())
-	if peakPos >= 0 && peakPos < len(runes) && runes[peakPos] == ' ' {
-		runes[peakPos] = '│'
-	}
-	barStr := string(runes)
+	barStr = string(runes)
 
 	color := "42"
 	if db > -3 {
@@ -158,7 +200,8 @@ func BarDB(db, peakDb float64, frames int64, drops uint64) string {
 		dropTxt = lipgloss.NewStyle().Foreground(lipgloss.Color("196")).Bold(true).Render(fmt.Sprintf(" drops=%d", drops))
 	}
 	okStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("250"))
-	return okStyle.Render(fmt.Sprintf("[%s] %6.1fdBFS%s%s", barStyled, db, rate, dropTxt))
+	top := okStyle.Render(fmt.Sprintf("[%s] %6.1fdBFS%s%s", barStyled, db, rate, dropTxt))
+	return top + "\n" + okStyle.Render(ruler(width))
 }
 
 func toDbFS(peak int16) float64 {
