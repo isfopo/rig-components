@@ -1,4 +1,4 @@
-// Package example provides a tiny, reusable harness for running a single
+// Package demo provides a tiny, reusable harness for running a single
 // component in isolation during development — the closest thing to a
 // Storybook "story" for a terminal UI component.
 //
