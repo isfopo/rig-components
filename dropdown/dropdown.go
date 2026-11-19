@@ -45,7 +45,7 @@ func New(options []string, current int) Model {
 		Current:       current,
 		Cursor:        current,
 		CurrentMarker: "[current] ",
-		CursorStyle:   lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("212")),
+		CursorStyle:   lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("magenta")),
 	}
 }
 

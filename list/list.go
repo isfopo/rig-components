@@ -32,8 +32,8 @@ func New(items []string) Model {
 		Active:        -1,
 		CursorGlyph:   "> ",
 		ActiveGlyph:   "•",
-		SelectedStyle: lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("212")),
-		ActiveStyle:   lipgloss.NewStyle().Foreground(lipgloss.Color("42")),
+		SelectedStyle: lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("magenta")),
+		ActiveStyle:   lipgloss.NewStyle().Foreground(lipgloss.Color("green")),
 	}
 }
 

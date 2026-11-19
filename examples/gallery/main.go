@@ -48,7 +48,7 @@ func newGallery() gallery {
 			m := dropdown.New([]string{"alpha", "beta", "gamma"}, 1)
 			m.Focus = true
 			m.Cursor = 0
-			m.CursorStyle = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("212"))
+			m.CursorStyle = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("magenta"))
 			m.CurrentMarker = "[current] "
 			return m
 		}},
@@ -56,8 +56,8 @@ func newGallery() gallery {
 		{"list / active", func() tea.Model {
 			m := list.New([]string{"one", "two", "three", "four"})
 			m = m.SetActive(2)
-			m.SelectedStyle = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("212"))
-			m.ActiveStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("42"))
+			m.SelectedStyle = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("magenta"))
+			m.ActiveStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("green"))
 			return m
 		}},
 		{"lamps / idle", func() tea.Model {
@@ -185,7 +185,7 @@ func (g gallery) View() string {
 		if i == g.cursor {
 			line = "> " + s.name
 			if g.focus == focusList {
-				line = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("212")).Render(line)
+				line = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("magenta")).Render(line)
 			}
 		}
 		lb += line + "\n"

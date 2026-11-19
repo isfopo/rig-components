@@ -294,9 +294,9 @@ func render(cfg Config, db, peakDb float64, frames int64, drops uint64) string {
 	}
 	dropTxt := ""
 	if drops > 0 {
-		dropTxt = lipgloss.NewStyle().Foreground(lipgloss.Color("196")).Bold(true).Render(fmt.Sprintf(" drops=%d", drops))
+		dropTxt = lipgloss.NewStyle().Foreground(lipgloss.Color("red")).Bold(true).Render(fmt.Sprintf(" drops=%d", drops))
 	}
-	okStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("250"))
+	okStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("bright black"))
 	top := okStyle.Render(fmt.Sprintf("[%s] %6.1fdBFS%s%s", barStyled, db, rate, dropTxt))
 
 	if !cfg.ShowRuler {

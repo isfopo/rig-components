@@ -16,8 +16,8 @@ import (
 
 // Default styles.
 var (
-	defaultLabelStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("245"))
-	defaultValueStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("252")).Bold(true)
+	defaultLabelStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("bright black"))
+	defaultValueStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("bright black")).Bold(true)
 )
 
 // Model is a tea.Model holding a compact live value.
@@ -79,7 +79,7 @@ func (m Model) View() string {
 	label := m.LabelStyle.Render(m.Label)
 	valueStyle := m.ValueStyle
 	if m.Stale {
-		valueStyle = valueStyle.Foreground(lipgloss.Color("240"))
+		valueStyle = valueStyle.Foreground(lipgloss.Color("bright black"))
 	}
 	value := valueStyle.Render(m.Value)
 	out := label + sep + value

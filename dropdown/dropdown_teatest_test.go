@@ -18,7 +18,7 @@ func TestDropdownGolden(t *testing.T) {
 	m := New([]string{"alpha", "beta", "gamma"}, 1)
 	m.Focus = true
 	m.Cursor = 0
-	m.CursorStyle = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("212"))
+	m.CursorStyle = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("magenta"))
 	m.CurrentMarker = "[current] "
 
 	tm := teatest.NewTestModel(t, m, teatest.WithInitialTermSize(40, 10))

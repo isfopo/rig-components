@@ -130,7 +130,7 @@ func (m Model) WithLampOff(cmd tea.Cmd) tea.Cmd {
 // View renders the lamps in order as a single line: dark hollow circle when
 // idle, bold filled dot in the lamp's color when lit.
 func (m Model) View() string {
-	dark := lipgloss.NewStyle().Foreground(lipgloss.Color("238")).Render("○")
+	dark := lipgloss.NewStyle().Foreground(lipgloss.Color("bright black")).Render("○")
 	var b string
 	for i, name := range m.names {
 		if i > 0 {
