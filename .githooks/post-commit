@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+# After a commit in this repo, update the submodule working trees in all
+# apps so local builds see the new commit. Does NOT commit or push; run
+# `git add core && git commit` in each app when you want to record the bump.
+ROOT="$(git rev-parse --show-toplevel)/.."
+ROOT="$(cd "$ROOT" && pwd)"
+APPS=(rig-looper rig-meter rig-midimon rig-template)
+SUB="$(basename "$(git rev-parse --show-toplevel)")"  # core or components
+for app in "${APPS[@]}"; do
+  dir="$ROOT/$app"
+  [ -d "$dir" ] || continue
+  if [ -L "$dir/$SUB" ]; then
+    echo "$app/$SUB is a dev symlink; skipping"
+    continue
+  fi
+  (cd "$dir" && git submodule update --remote "$SUB" >/dev/null 2>&1) && echo "updated $app/$SUB working tree" || true
+done
+echo "Reminder: commit/push app submodule bumps when ready."
